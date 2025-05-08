@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<RCC>
+  <qresource prefix="assets">
+    <file>icons/Send.svg</file>
+    <file>icons/Robot.svg</file>
+    <file>icons/User.svg</file>
+    <file>icons/System.svg</file>
+    <file>icons/Upload.svg</file>
+    <file>icons/Database.svg</file>
+    <file>icons/Document.svg</file>
+  </qresource>
+</RCC>
