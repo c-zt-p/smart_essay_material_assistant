@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QColor
 from qfluentwidgets import (
     FluentWindow, SingleDirectionScrollArea, LineEdit, PrimaryPushButton,
-    MessageBoxBase, ComboBox, CheckBox, InfoBar, InfoBarPosition,
+    MessageBoxBase, ComboBox, InfoBar, InfoBarPosition,
     BodyLabel, ProgressBar, SubtitleLabel, CaptionLabel,
     NavigationItemPosition
 )
@@ -243,10 +243,6 @@ class ChatInterfaceWidget(QWidget):
         self.create_rag_db_button = PrimaryPushButton(Icon.DATABASE, "New DB", self)
         self.controls_layout.addWidget(self.create_rag_db_button)
 
-        # Use RAG Checkbox is removed
-        # self.use_rag_checkbox = CheckBox("Use RAG", self)
-        # self.use_rag_checkbox.setChecked(False)
-        # self.controls_layout.addWidget(self.use_rag_checkbox)
 
         self.controls_layout.addStretch(1)
 
@@ -255,7 +251,6 @@ class ChatInterfaceWidget(QWidget):
         self.chat_model_selector.currentTextChanged.connect(self._on_chat_model_changed)
         self.rag_db_selector.currentTextChanged.connect(self._on_rag_db_selected_via_combobox)
         self.create_rag_db_button.clicked.connect(self._on_create_rag_db)
-        # self.use_rag_checkbox.toggled.connect(self._on_use_rag_toggled) # Removed
         self.chat_input.messageSent.connect(self._on_send_message)
         self.send_button.clicked.connect(self._on_send_message)
 
@@ -264,16 +259,10 @@ class ChatInterfaceWidget(QWidget):
         self._update_rag_db_selector() # Populates the list
 
         # Always default to "None (Direct Chat)" on initial load.
-        # This will trigger _on_rag_db_selected_via_combobox if the text/index changes.
         if self.rag_db_selector.count() > 0:
             self.rag_db_selector.setCurrentIndex(0)
         
-        # If setCurrentIndex(0) didn't trigger the slot (e.g., if it was already index 0
-        # and text didn't change), ensure RAG manager state is consistent.
-        # RAGManager is initialized with current_db_name=None and query_engine=None,
-        # so this should be fine.
-        
-        self._initial_load_complete = True # Signal that initial loading is done
+        self._initial_load_complete = True
 
     def _update_rag_db_selector(self):
         """Update the RAG database selector with available databases."""
@@ -295,17 +284,13 @@ class ChatInterfaceWidget(QWidget):
                     break
         
         if not found_previous: # If previous selection not found or no previous selection
-            if dbs and self.rag_db_selector.currentIndex() !=0 : # If there are DBs, and "None" is not already selected
-                 # Don't auto-select a DB by default, keep "None" selected unless user changes
-                 pass # self.rag_db_selector.setCurrentIndex(1) - No, keep it at 0 if not restored
-            else: # No DBs or "None" was already selected
-                 self.rag_db_selector.setCurrentIndex(0)
+            if dbs and self.rag_db_selector.currentIndex() !=0 :
+                 pass
+            else:
+                 self.rag_db_selector.setCurrentIndex(0) # Select "None" by default
 
 
         self.rag_db_selector.blockSignals(False)
-        # self.use_rag_checkbox.setEnabled(len(dbs) > 0) # Removed
-        # if not dbs: # Removed
-        #     self.use_rag_checkbox.setChecked(False) # Removed
 
     @Slot(str)
     def _on_chat_model_changed(self, model_name: str):
@@ -481,10 +466,7 @@ class ChatInterfaceWidget(QWidget):
             QTimer.singleShot(1500, lambda: self.progress_container.setVisible(False))
         elif "Error" in message or value == -1: # Explicit error signal or error in message
             self.progress_container.setVisible(False)
-            # Don't show a generic error InfoBar here if specific error handling is done elsewhere
-            # This is mostly for progress display. The task_failed signal handles the main error reporting.
 
-    # _on_use_rag_toggled method is removed entirely
 
     def _add_message(self, sender_type: str, text: str, is_streaming: bool = False) -> MessageUI:
         """Add a new message to the chat history UI."""
