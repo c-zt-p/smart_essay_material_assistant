@@ -3,7 +3,6 @@
     "chat_model": "fb.gpt-4-1",
     "embedding_model": "fb.ada-embed"
   },
-  "llama_index_use_ollama": false,
   "chat_models": [
     {
       "name": "fb.gpt-4-1",
@@ -33,13 +32,6 @@
       "model_name": "text-embedding-ada-002",
       "model_url": "https://fast.bemore.lol/v1",
       "api_key": "sk-h2RpOBkeH4a92YDb1554Ea5960D642EeBb301751B02cBb99",
-      "token_limit": 4096
-    },
-    {
-      "name": "ollama",
-      "model_name": "nomic-embed-text",
-      "model_url": "http://localhost:11434/v1",
-      "api_key": "fake",
       "token_limit": 4096
     }
   ],
