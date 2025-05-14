@@ -26,7 +26,8 @@ from .message_widgets import MessageUI
 from .source_widget import RAGSourceWidget
 from core.settings_manager import settings
 from core.llm_client import LLMClient
-from core.rag_manager import RAGManager
+#from core.rag_manager import RAGManager
+from core.rag_manager_hnswlib import RAGManager
 
 
 class AsyncRunner(QThread):

@@ -167,3 +167,4 @@ cython_debug/
 build_dir/
 temp/
 rag_databases/
+data/reference_hdevelop.md
