@@ -380,8 +380,6 @@ class RAGManager:
         qa_template_str = (
             "Based on the following context from a knowledge base AND the previous conversation history, "
             "please answer the user's question. "
-            "If the context is not relevant or insufficient, state that you cannot answer based on the "
-            "provided documents and try to answer generally if possible, or ask for clarification.\n"
             "---------------------\n"
             "Context from Knowledge Base:\n{context_str}\n"
             "---------------------\n"

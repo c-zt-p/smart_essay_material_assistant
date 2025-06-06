@@ -173,7 +173,7 @@ class ChatInterfaceWidget(QWidget):
         self._load_initial_data()
 
         # Welcome message
-        QTimer.singleShot(100, lambda: self._add_message("system", "Welcome to RAG Chat! You are in Direct Chat mode. Select or create a RAG DB to use Retrieval Augmented Generation."))
+        QTimer.singleShot(100, lambda: self._add_message("system", "欢迎来到作文素材库！请选择一个作文素材库，或者新建一个。然后开始你的问答吧！"))
 
     def _setup_ui(self):
         """Initialize the UI components."""
@@ -226,7 +226,7 @@ class ChatInterfaceWidget(QWidget):
         """Set up the control widgets."""
         self.controls_layout.setContentsMargins(10, 5, 10, 5)
 
-        self.controls_layout.addWidget(BodyLabel("Chat Model:", self))
+        self.controls_layout.addWidget(BodyLabel("对话模型:", self))
         self.chat_model_selector = ComboBox(self)
         for model_cfg in settings.chat_models:
             self.chat_model_selector.addItem(model_cfg.name, userData=model_cfg.name)
@@ -236,13 +236,16 @@ class ChatInterfaceWidget(QWidget):
 
         self.controls_layout.addSpacerItem(QSpacerItem(20, 1, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed))
 
-        self.controls_layout.addWidget(BodyLabel("RAG DB:", self))
+        self.controls_layout.addWidget(BodyLabel("作文素材库:", self))
         self.rag_db_selector = ComboBox(self)
-        self.rag_db_selector.addItem("None (Direct Chat)", userData=None)
+        self.rag_db_selector.addItem("无素材库（纯聊天模式）", userData=None)
         self.controls_layout.addWidget(self.rag_db_selector)
 
-        self.create_rag_db_button = PrimaryPushButton(Icon.DATABASE, "New DB", self)
+        self.create_rag_db_button = PrimaryPushButton(Icon.DATABASE, "新建素材库", self)
         self.controls_layout.addWidget(self.create_rag_db_button)
+        
+        self.open_dify_button = PrimaryPushButton(Icon.ROBOT, "呼叫作文素材小帮手", self)
+        self.controls_layout.addWidget(self.open_dify_button)
 
 
         self.controls_layout.addStretch(1)
@@ -252,6 +255,7 @@ class ChatInterfaceWidget(QWidget):
         self.chat_model_selector.currentTextChanged.connect(self._on_chat_model_changed)
         self.rag_db_selector.currentTextChanged.connect(self._on_rag_db_selected_via_combobox)
         self.create_rag_db_button.clicked.connect(self._on_create_rag_db)
+        self.open_dify_button.clicked.connect(self._on_open_dify)
         self.chat_input.messageSent.connect(self._on_send_message)
         self.send_button.clicked.connect(self._on_send_message)
 
@@ -270,7 +274,7 @@ class ChatInterfaceWidget(QWidget):
         self.rag_db_selector.blockSignals(True)
         current_selection_data = self.rag_db_selector.currentData()
         self.rag_db_selector.clear()
-        self.rag_db_selector.addItem("None (Direct Chat)", userData=None)
+        self.rag_db_selector.addItem("无素材库（纯聊天模式）", userData=None)
 
         dbs = self.rag_manager.list_rag_dbs()
         for db_name in dbs:
@@ -301,7 +305,7 @@ class ChatInterfaceWidget(QWidget):
             self.rag_manager._configure_llama_index_settings(chat_model_name=model_name)
             InfoBar.success(
                 "Success",
-                f"Chat model changed to {model_name}",
+                f"对话模型切换为 {model_name}",
                 parent=self.window(),
                 duration=2000,
                 position=InfoBarPosition.TOP
@@ -333,7 +337,7 @@ class ChatInterfaceWidget(QWidget):
             if switched_from_active_rag and self._initial_load_complete:
                 InfoBar.info(
                     "Info",
-                    "Direct chat mode enabled. RAG DB deselected.",
+                    "纯聊天模式开启，素材库下线",
                     parent=self.window(),
                     duration=2000,
                     position=InfoBarPosition.TOP_RIGHT
@@ -343,7 +347,7 @@ class ChatInterfaceWidget(QWidget):
         """Load the selected RAG database."""
         self.progress_container.setVisible(True)
         self.rag_progress_bar.setVal(0)
-        self.rag_progress_label.setText(f"Loading RAG DB: {db_name}...")
+        self.rag_progress_label.setText(f"加载素材库: {db_name}...")
 
         coro_func = self.rag_manager.load_rag_db
         self.db_loader_thread = AsyncRunner(
@@ -363,7 +367,7 @@ class ChatInterfaceWidget(QWidget):
             db_name = self.rag_manager.current_db_name
             InfoBar.success(
                 "Success",
-                f"RAG DB '{db_name}' loaded.",
+                f"素材库 '{db_name}' 加载成功.",
                 parent=self.window(),
                 duration=3000,
                 position=InfoBarPosition.TOP_RIGHT
@@ -391,7 +395,7 @@ class ChatInterfaceWidget(QWidget):
                 if db_name in self.rag_manager.list_rag_dbs():
                     InfoBar.warning(
                         "Name Exists",
-                        f"Database '{db_name}' already exists. Choose another name.",
+                        f"素材库 '{db_name}' 已经存在，请另起雅名",
                         parent=self.window(),
                         duration=3000,
                         position=InfoBarPosition.TOP_RIGHT
@@ -400,7 +404,7 @@ class ChatInterfaceWidget(QWidget):
 
                 self.progress_container.setVisible(True)
                 self.rag_progress_bar.setVal(0)
-                self.rag_progress_label.setText(f"Creating RAG DB: {db_name}...")
+                self.rag_progress_label.setText(f"创建素材库: {db_name}...")
 
                 coro_func = self.rag_manager.create_rag_db
                 self.db_creator_thread = AsyncRunner(
@@ -411,6 +415,11 @@ class ChatInterfaceWidget(QWidget):
                 self.db_creator_thread.task_failed.connect(self._on_rag_db_op_failed)
                 self.db_creator_thread.progress_updated.connect(self._update_rag_progress)
                 self.db_creator_thread.start()
+                
+    def _on_open_dify(self):
+        """Open Dify web interface"""
+        import webbrowser
+        webbrowser.open("https://udify.app/chat/qdmzJb4iNrPXGVnJ")
 
     @Slot(object)
     def _on_rag_db_create_completed(self, success: bool):
@@ -420,8 +429,8 @@ class ChatInterfaceWidget(QWidget):
             try:
                 # Attempt to get the name from the progress label if it's reliable
                 label_text = self.rag_progress_label.text()
-                if "Creating RAG DB: " in label_text and "..." in label_text:
-                     last_created_db_name = label_text.split("Creating RAG DB: ")[1].replace("...", "")
+                if "创建素材库: " in label_text and "..." in label_text:
+                     last_created_db_name = label_text.split("创建素材库: ")[1].replace("...", "")
                 else: # Fallback if parsing fails
                     # This might be tricky if the DB name isn't directly passed back
                     # For now, use the RAG manager's current DB if it was set by create_rag_db
@@ -432,7 +441,7 @@ class ChatInterfaceWidget(QWidget):
 
             InfoBar.success(
                 "Success",
-                f"RAG DB '{last_created_db_name}' created.",
+                f"素材库 '{last_created_db_name}' 已创建",
                 parent=self.window(),
                 duration=3000,
                 position=InfoBarPosition.TOP_RIGHT
@@ -633,7 +642,7 @@ class ChatWindow(FluentWindow):
     
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("QFluent RAG Chat")
+        self.setWindowTitle("素材库搜搜")
         
         # Setup Core Components
         self.llm_client = LLMClient()
